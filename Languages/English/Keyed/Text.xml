@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MCAS.DisableSound>Disable sound</MCAS.DisableSound>
+  <MCAS.DisableSoundTT>Click to disable siren sound for all alert speakers.</MCAS.DisableSoundTT>
+  <MCAS.EnableSound>Enable sound</MCAS.EnableSound>
+  <MCAS.EnableSoundTT>Click to enable siren sound for all alert speakers.</MCAS.EnableSoundTT>
+  <MCAS.PlaceWorker>Alert speaker must be built near a wall or tall edifice.</MCAS.PlaceWorker>
+</LanguageData>
