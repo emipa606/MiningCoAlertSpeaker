@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+  <!-- EN: Alert speaker -->
+  <AlertSpeaker.label>Alert speaker</AlertSpeaker.label>
+  <!-- EN: An alert speaker to warn your colonist from incoming threat. -->
+  <AlertSpeaker.description>An alert speaker to warn your colonist from incoming threat.</AlertSpeaker.description>
+</LanguageData>

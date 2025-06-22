@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+  <!-- EN: medium adrenaline boost -->
+  <HediffAdrenalineMedium.label>medium adrenaline boost</HediffAdrenalineMedium.label>
+  <!-- EN: The colony is under attack, let's defend our lives! All to the combat posts! -->
+  <HediffAdrenalineMedium.description>The colony is under attack, let's defend our lives! All to the combat posts!</HediffAdrenalineMedium.description>
+  <!-- EN: small adrenaline boost -->
+  <HediffAdrenalineSmall.label>small adrenaline boost</HediffAdrenalineSmall.label>
+  <!-- EN: I heard the alarm. Let's see what happens. -->
+  <HediffAdrenalineSmall.description>I heard the alarm. Let's see what happens.</HediffAdrenalineSmall.description>
+</LanguageData>

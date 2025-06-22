@@ -10,57 +10,57 @@ namespace AlertSpeaker;
 [StaticConstructorOnStartup]
 internal class Building_AlertSpeaker : Building
 {
-    public const float alertSpeakerMaxRange = 6.9f;
+    private const float AlertSpeakerMaxRange = 6.9f;
 
-    public const int earlyPhaseTicksThreshold = 15000;
+    private const int EarlyPhaseTicksThreshold = 15000;
 
-    public const int alarmSoundPeriodInTicks = 1200;
+    private const int AlarmSoundPeriodInTicks = 1200;
 
-    public static readonly int updatePeriodInTicks = 60;
+    private const int UpdatePeriodInTicks = 60;
 
-    public static int nextUpdateTick;
+    private static int nextUpdateTick;
 
-    public static int alertStartTick;
+    private static int alertStartTick;
 
-    public static StoryDanger previousDangerRate = StoryDanger.None;
+    private static StoryDanger previousDangerRate = StoryDanger.None;
 
-    public static StoryDanger currentDangerRate = StoryDanger.None;
+    private static StoryDanger currentDangerRate = StoryDanger.None;
 
-    public static int lastDrawingUpdateTick;
+    private static int lastDrawingUpdateTick;
 
-    public static float glowRadius;
+    private static float glowRadius;
 
-    public static ColorInt glowColor = new ColorInt(0, 0, 0, 255);
+    private static ColorInt glowColor = new(0, 0, 0, 255);
 
-    public static float redAlertLightAngle;
+    private static float redAlertLightAngle;
 
-    public static float redAlertLightIntensity = 0.25f;
+    private static float redAlertLightIntensity = 0.25f;
 
-    public static readonly Material redAlertLight =
+    private static readonly Material redAlertLight =
         MaterialPool.MatFrom("Effects/RedAlertLight", ShaderDatabase.Transparent);
 
-    public static Matrix4x4 redAlertLightMatrix;
+    private static Matrix4x4 redAlertLightMatrix;
 
-    public static Vector3 redAlertLightScale = new Vector3(5f, 1f, 5f);
+    private static readonly Vector3 redAlertLightScale = new(5f, 1f, 5f);
 
-    public static bool soundIsEnabled = true;
+    private static bool soundIsEnabled = true;
 
-    public static int nextAlarmSoundTick;
+    private static int nextAlarmSoundTick;
 
-    public static readonly SoundDef lowDangerAlarmSound = SoundDef.Named("LowDangerAlarm");
+    private static readonly SoundDef lowDangerAlarmSound = SoundDef.Named("LowDangerAlarm");
 
-    public static readonly SoundDef highDangerAlarmSound = SoundDef.Named("HighDangerAlarm");
+    private static readonly SoundDef highDangerAlarmSound = SoundDef.Named("HighDangerAlarm");
 
-    public CompGlower glowerComp;
+    private CompGlower glowerComp;
 
-    public CompPowerTrader powerComp;
+    private CompPowerTrader powerComp;
 
     public override void SpawnSetup(Map map, bool respawningAfterLoad)
     {
         base.SpawnSetup(map, respawningAfterLoad);
         glowerComp = GetComp<CompGlower>();
         powerComp = GetComp<CompPowerTrader>();
-        nextUpdateTick = Find.TickManager.TicksGame + updatePeriodInTicks;
+        nextUpdateTick = Find.TickManager.TicksGame + UpdatePeriodInTicks;
     }
 
     public override void ExposeData()
@@ -84,7 +84,7 @@ internal class Building_AlertSpeaker : Building
     public static List<IntVec3> GetAreaOfEffectCells(Map map, IntVec3 position)
     {
         var list = new List<IntVec3>();
-        foreach (var intVec in GenRadial.RadialCellsAround(position, alertSpeakerMaxRange, true))
+        foreach (var intVec in GenRadial.RadialCellsAround(position, AlertSpeakerMaxRange, true))
         {
             if (intVec.GetRoom(map) == position.GetRoom(map))
             {
@@ -95,7 +95,7 @@ internal class Building_AlertSpeaker : Building
         return list;
     }
 
-    public override void Tick()
+    protected override void Tick()
     {
         base.Tick();
         if (Map == null)
@@ -111,7 +111,7 @@ internal class Building_AlertSpeaker : Building
 
         if (Find.TickManager.TicksGame > nextUpdateTick)
         {
-            nextUpdateTick = Find.TickManager.TicksGame + updatePeriodInTicks;
+            nextUpdateTick = Find.TickManager.TicksGame + UpdatePeriodInTicks;
             previousDangerRate = currentDangerRate;
             currentDangerRate = Map.dangerWatcher.DangerRating;
             if (currentDangerRate != previousDangerRate)
@@ -119,16 +119,16 @@ internal class Building_AlertSpeaker : Building
                 PerformTreatmentOnDangerRateChange();
             }
 
-            PerformSoundTreatment();
+            performSoundTreatment();
         }
 
-        if (nextUpdateTick == Find.TickManager.TicksGame + updatePeriodInTicks)
+        if (nextUpdateTick == Find.TickManager.TicksGame + UpdatePeriodInTicks)
         {
-            UpdateGlowerParameters();
+            updateGlowerParameters();
             var powerOn = powerComp.PowerOn;
             if (powerOn)
             {
-                TryApplyAdrenalineBonus();
+                tryApplyAdrenalineBonus();
             }
         }
 
@@ -138,58 +138,53 @@ internal class Building_AlertSpeaker : Building
         }
 
         lastDrawingUpdateTick = Find.TickManager.TicksGame;
-        UpdateDrawingParameters();
+        updateDrawingParameters();
     }
 
-    public void PerformTreatmentOnDangerRateChange()
+    private void PerformTreatmentOnDangerRateChange()
     {
-        if (previousDangerRate == StoryDanger.None &&
-            currentDangerRate is StoryDanger.Low or StoryDanger.High)
+        switch (previousDangerRate)
         {
-            alertStartTick = Find.TickManager.TicksGame;
-            nextAlarmSoundTick = 0;
-            return;
-        }
-
-        if (previousDangerRate is StoryDanger.Low or StoryDanger.High &&
-            currentDangerRate == StoryDanger.None)
-        {
-            RemoveAnyAdrenalineHediffFromAllColonists();
-            nextAlarmSoundTick = 0;
-            return;
-        }
-
-        if (previousDangerRate == StoryDanger.Low && currentDangerRate == StoryDanger.High)
-        {
-            nextAlarmSoundTick = 0;
-            foreach (var colonist in Map.mapPawns.FreeColonists)
+            case StoryDanger.None when
+                currentDangerRate is StoryDanger.Low or StoryDanger.High:
+                alertStartTick = Find.TickManager.TicksGame;
+                nextAlarmSoundTick = 0;
+                return;
+            case StoryDanger.Low or StoryDanger.High when
+                currentDangerRate == StoryDanger.None:
+                removeAnyAdrenalineHediffFromAllColonists();
+                nextAlarmSoundTick = 0;
+                return;
+            case StoryDanger.Low when currentDangerRate == StoryDanger.High:
             {
-                if (!HasHediffAdrenalineSmall(colonist))
+                nextAlarmSoundTick = 0;
+                foreach (var colonist in Map.mapPawns.FreeColonists)
                 {
-                    continue;
+                    if (!hasHediffAdrenalineSmall(colonist))
+                    {
+                        continue;
+                    }
+
+                    removeHediffAdrenalineSmall(colonist);
+                    applyHediffAdrenalineMedium(colonist);
                 }
 
-                RemoveHediffAdrenalineSmall(colonist);
-                ApplyHediffAdrenalineMedium(colonist);
+                return;
             }
-
-            return;
-        }
-
-        if (previousDangerRate == StoryDanger.High && currentDangerRate == StoryDanger.Low)
-        {
-            nextAlarmSoundTick = 0;
+            case StoryDanger.High when currentDangerRate == StoryDanger.Low:
+                nextAlarmSoundTick = 0;
+                break;
         }
     }
 
-    public void TryApplyAdrenalineBonus()
+    private void tryApplyAdrenalineBonus()
     {
         if (currentDangerRate == StoryDanger.None)
         {
             return;
         }
 
-        if (Find.TickManager.TicksGame > alertStartTick + earlyPhaseTicksThreshold)
+        if (Find.TickManager.TicksGame > alertStartTick + EarlyPhaseTicksThreshold)
         {
             return;
         }
@@ -197,43 +192,43 @@ internal class Building_AlertSpeaker : Building
         foreach (var pawn in Map.mapPawns.FreeColonists)
         {
             if (pawn.Downed || pawn.Dead || !pawn.Awake() || pawn.GetRoom() != this.GetRoom() ||
-                !pawn.Position.InHorDistOf(Position, alertSpeakerMaxRange))
+                !pawn.Position.InHorDistOf(Position, AlertSpeakerMaxRange))
             {
                 continue;
             }
 
             if (currentDangerRate == StoryDanger.Low)
             {
-                if (!HasHediffAdrenalineMedium(pawn))
+                if (!hasHediffAdrenalineMedium(pawn))
                 {
-                    ApplyHediffAdrenalineSmall(pawn);
+                    applyHediffAdrenalineSmall(pawn);
                 }
 
                 continue;
             }
 
-            RemoveHediffAdrenalineSmall(pawn);
-            ApplyHediffAdrenalineMedium(pawn);
+            removeHediffAdrenalineSmall(pawn);
+            applyHediffAdrenalineMedium(pawn);
         }
     }
 
-    public static bool HasHediffAdrenalineSmall(Pawn colonist)
+    private static bool hasHediffAdrenalineSmall(Pawn colonist)
     {
         var firstHediffOfDef =
             colonist.health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineSmallDef);
         return firstHediffOfDef != null;
     }
 
-    public static bool HasHediffAdrenalineMedium(Pawn colonist)
+    private static bool hasHediffAdrenalineMedium(Pawn colonist)
     {
         var firstHediffOfDef =
             colonist.health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineMediumDef);
         return firstHediffOfDef != null;
     }
 
-    public static void ApplyHediffAdrenalineSmall(Pawn colonist)
+    private static void applyHediffAdrenalineSmall(Pawn colonist)
     {
-        if (!HasHediffAdrenalineSmall(colonist))
+        if (!hasHediffAdrenalineSmall(colonist))
         {
             var moteBubble = (MoteBubble)ThingMaker.MakeThing(ThingDefOf.Mote_ThoughtGood);
             moteBubble.SetupMoteBubble(ContentFinder<Texture2D>.Get("Things/Mote/IncapIcon"), null);
@@ -244,9 +239,9 @@ internal class Building_AlertSpeaker : Building
         colonist.health.AddHediff(Util_AlertSpeaker.HediffAdrenalineSmallDef);
     }
 
-    public static void ApplyHediffAdrenalineMedium(Pawn colonist)
+    private static void applyHediffAdrenalineMedium(Pawn colonist)
     {
-        if (!HasHediffAdrenalineMedium(colonist))
+        if (!hasHediffAdrenalineMedium(colonist))
         {
             var moteBubble = (MoteBubble)ThingMaker.MakeThing(ThingDefOf.Mote_ThoughtBad);
             moteBubble.SetupMoteBubble(ContentFinder<Texture2D>.Get("Things/Mote/IncapIcon"), null);
@@ -257,7 +252,7 @@ internal class Building_AlertSpeaker : Building
         colonist.health.AddHediff(Util_AlertSpeaker.HediffAdrenalineMediumDef);
     }
 
-    public static void RemoveHediffAdrenalineSmall(Pawn colonist)
+    private static void removeHediffAdrenalineSmall(Pawn colonist)
     {
         var firstHediffOfDef =
             colonist.health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineSmallDef);
@@ -267,7 +262,7 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    public void RemoveAnyAdrenalineHediffFromAllColonists()
+    private void removeAnyAdrenalineHediffFromAllColonists()
     {
         IEnumerable<Pawn> freeColonists = Map.mapPawns.FreeColonists;
         foreach (var pawn in freeColonists)
@@ -287,7 +282,7 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    public void PerformSoundTreatment()
+    private void performSoundTreatment()
     {
         if (currentDangerRate == StoryDanger.None)
         {
@@ -300,7 +295,7 @@ internal class Building_AlertSpeaker : Building
         }
 
         nextAlarmSoundTick = Find.TickManager.TicksGame +
-                             (alarmSoundPeriodInTicks * (int)Find.TickManager.CurTimeSpeed);
+                             (AlarmSoundPeriodInTicks * (int)Find.TickManager.CurTimeSpeed);
         if (currentDangerRate == StoryDanger.Low)
         {
             PlayOneLowDangerAlarmSound();
@@ -311,7 +306,7 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    public void PlayOneLowDangerAlarmSound()
+    private static void PlayOneLowDangerAlarmSound()
     {
         if (soundIsEnabled)
         {
@@ -319,7 +314,7 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    public void PlayOneHighDangerAlarmSound()
+    private static void PlayOneHighDangerAlarmSound()
     {
         if (soundIsEnabled)
         {
@@ -327,7 +322,7 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    public void UpdateDrawingParameters()
+    private void updateDrawingParameters()
     {
         switch (currentDangerRate)
         {
@@ -350,20 +345,17 @@ internal class Building_AlertSpeaker : Building
                 glowColor.g = 0;
                 glowColor.b = 0;
                 redAlertLightAngle = (redAlertLightAngle + (3f / Find.TickManager.TickRateMultiplier)) % 360f;
-                if (redAlertLightAngle < 90f)
+                switch (redAlertLightAngle)
                 {
-                    redAlertLightIntensity = redAlertLightAngle / 90f;
-                }
-                else
-                {
-                    if (redAlertLightAngle < 180f)
-                    {
+                    case < 90f:
+                        redAlertLightIntensity = redAlertLightAngle / 90f;
+                        break;
+                    case < 180f:
                         redAlertLightIntensity = 1f - ((redAlertLightAngle - 90f) / 90f);
-                    }
-                    else
-                    {
+                        break;
+                    default:
                         redAlertLightIntensity = 0f;
-                    }
+                        break;
                 }
 
                 redAlertLightMatrix.SetTRS(
@@ -375,7 +367,7 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    public void UpdateGlowerParameters()
+    private void updateGlowerParameters()
     {
         if (glowerComp.Props.glowRadius == glowRadius && glowerComp.Props.glowColor == glowColor)
         {
@@ -385,7 +377,7 @@ internal class Building_AlertSpeaker : Building
         glowerComp.Props.glowRadius = glowRadius;
         glowerComp.Props.glowColor = glowColor;
         Map.mapDrawer.MapMeshDirty(Position, 1);
-        Map.glowGrid.DirtyCache(Position);
+        Map.glowGrid.DirtyCell(Position);
     }
 
     protected override void DrawAt(Vector3 drawLoc, bool flip = false)
@@ -409,32 +401,32 @@ internal class Building_AlertSpeaker : Building
     public override IEnumerable<Gizmo> GetGizmos()
     {
         IList<Gizmo> list = new List<Gizmo>();
-        var num = 700000100;
-        var command_Action = new Command_Action();
+        const int num = 700000100;
+        var commandAction = new Command_Action();
         if (soundIsEnabled)
         {
-            command_Action.icon = ContentFinder<Texture2D>.Get("Ui/Commands/CommandButton_SirenSoundEnabled");
-            command_Action.defaultLabel = "MCAS.DisableSound".Translate();
-            command_Action.defaultDesc = "MCAS.DisableSoundTT".Translate();
+            commandAction.icon = ContentFinder<Texture2D>.Get("Ui/Commands/CommandButton_SirenSoundEnabled");
+            commandAction.defaultLabel = "MCAS.DisableSound".Translate();
+            commandAction.defaultDesc = "MCAS.DisableSoundTT".Translate();
         }
         else
         {
-            command_Action.icon = ContentFinder<Texture2D>.Get("Ui/Commands/CommandButton_SirenSoundDisabled");
-            command_Action.defaultLabel = "MCAS.EnableSound".Translate();
-            command_Action.defaultDesc = "CAS.EnableSoundTT".Translate();
+            commandAction.icon = ContentFinder<Texture2D>.Get("Ui/Commands/CommandButton_SirenSoundDisabled");
+            commandAction.defaultLabel = "MCAS.EnableSound".Translate();
+            commandAction.defaultDesc = "CAS.EnableSoundTT".Translate();
         }
 
-        command_Action.activateSound = SoundDef.Named("Click");
-        command_Action.action = PerformSirenSoundAction;
-        command_Action.groupKey = num + 1;
-        list.Add(command_Action);
+        commandAction.activateSound = SoundDef.Named("Click");
+        commandAction.action = performSirenSoundAction;
+        commandAction.groupKey = num + 1;
+        list.Add(commandAction);
         var gizmos = base.GetGizmos();
         var result = gizmos != null ? list.AsEnumerable().Concat(gizmos) : list.AsEnumerable();
 
         return result;
     }
 
-    public void PerformSirenSoundAction()
+    private static void performSirenSoundAction()
     {
         soundIsEnabled = !soundIsEnabled;
     }
