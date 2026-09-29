@@ -18,42 +18,42 @@ internal class Building_AlertSpeaker : Building
 
     private const int UpdatePeriodInTicks = 60;
 
-    private static int nextUpdateTick;
-
-    private static int alertStartTick;
-
-    private static StoryDanger previousDangerRate = StoryDanger.None;
-
-    private static StoryDanger currentDangerRate = StoryDanger.None;
-
-    private static int lastDrawingUpdateTick;
-
-    private static float glowRadius;
-
-    private static ColorInt glowColor = new(0, 0, 0, 255);
-
-    private static float redAlertLightAngle;
-
-    private static float redAlertLightIntensity = 0.25f;
-
-    private static readonly Material redAlertLight =
-        MaterialPool.MatFrom("Effects/RedAlertLight", ShaderDatabase.Transparent);
-
-    private static Matrix4x4 redAlertLightMatrix;
-
-    private static readonly Vector3 redAlertLightScale = new(5f, 1f, 5f);
-
     private static bool soundIsEnabled = true;
-
-    private static int nextAlarmSoundTick;
 
     private static readonly SoundDef lowDangerAlarmSound = SoundDef.Named("LowDangerAlarm");
 
     private static readonly SoundDef highDangerAlarmSound = SoundDef.Named("HighDangerAlarm");
 
+    private static readonly Material redAlertLight =
+        MaterialPool.MatFrom("Effects/RedAlertLight", ShaderDatabase.Transparent);
+
+    private readonly Vector3 redAlertLightScale = new(5f, 1f, 5f);
+
+    private int alertStartTick;
+
+    private StoryDanger currentDangerRate = StoryDanger.None;
+
+    private ColorInt glowColor = new(0, 0, 0, 255);
+
+    private float glowRadius;
+
     private CompGlower glowerComp;
 
+    private int lastDrawingUpdateTick;
+
+    private int nextAlarmSoundTick;
+
+    private int nextUpdateTick;
+
     private CompPowerTrader powerComp;
+
+    private StoryDanger previousDangerRate = StoryDanger.None;
+
+    private float redAlertLightAngle;
+
+    private float redAlertLightIntensity = 0.25f;
+
+    private Matrix4x4 redAlertLightMatrix;
 
     public override void SpawnSetup(Map map, bool respawningAfterLoad)
     {
@@ -83,16 +83,8 @@ internal class Building_AlertSpeaker : Building
 
     public static List<IntVec3> GetAreaOfEffectCells(Map map, IntVec3 position)
     {
-        var list = new List<IntVec3>();
-        foreach (var intVec in GenRadial.RadialCellsAround(position, AlertSpeakerMaxRange, true))
-        {
-            if (intVec.GetRoom(map) == position.GetRoom(map))
-            {
-                list.Add(intVec);
-            }
-        }
-
-        return list;
+        return GenRadial.RadialCellsAround(position, AlertSpeakerMaxRange, true)
+            .Where(intVec => intVec.GetRoom(map) == position.GetRoom(map)).ToList();
     }
 
     protected override void Tick()
@@ -112,21 +104,21 @@ internal class Building_AlertSpeaker : Building
         if (Find.TickManager.TicksGame > nextUpdateTick)
         {
             nextUpdateTick = Find.TickManager.TicksGame + UpdatePeriodInTicks;
+
             previousDangerRate = currentDangerRate;
             currentDangerRate = Map.dangerWatcher.DangerRating;
+
             if (currentDangerRate != previousDangerRate)
             {
                 PerformTreatmentOnDangerRateChange();
             }
 
-            performSoundTreatment();
-        }
-
-        if (nextUpdateTick == Find.TickManager.TicksGame + UpdatePeriodInTicks)
-        {
+            updateDrawingParameters();
             updateGlowerParameters();
-            var powerOn = powerComp.PowerOn;
-            if (powerOn)
+            performSoundTreatment();
+            glowerComp.ForceRegister(Map);
+
+            if (powerComp.PowerOn)
             {
                 tryApplyAdrenalineBonus();
             }
@@ -265,19 +257,19 @@ internal class Building_AlertSpeaker : Building
     private void removeAnyAdrenalineHediffFromAllColonists()
     {
         IEnumerable<Pawn> freeColonists = Map.mapPawns.FreeColonists;
-        foreach (var pawn in freeColonists)
+        foreach (var health in freeColonists.Select(pawn => pawn.health))
         {
             var firstHediffOfDef =
-                pawn.health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineSmallDef);
+                health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineSmallDef);
             if (firstHediffOfDef != null)
             {
-                pawn.health.RemoveHediff(firstHediffOfDef);
+                health.RemoveHediff(firstHediffOfDef);
             }
 
-            firstHediffOfDef = pawn.health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineMediumDef);
+            firstHediffOfDef = health.hediffSet.GetFirstHediffOfDef(Util_AlertSpeaker.HediffAdrenalineMediumDef);
             if (firstHediffOfDef != null)
             {
-                pawn.health.RemoveHediff(firstHediffOfDef);
+                health.RemoveHediff(firstHediffOfDef);
             }
         }
     }
@@ -306,19 +298,19 @@ internal class Building_AlertSpeaker : Building
         }
     }
 
-    private static void PlayOneLowDangerAlarmSound()
+    private void PlayOneLowDangerAlarmSound()
     {
         if (soundIsEnabled)
         {
-            lowDangerAlarmSound.PlayOneShotOnCamera();
+            lowDangerAlarmSound.PlayOneShot(new TargetInfo(Position, Map));
         }
     }
 
-    private static void PlayOneHighDangerAlarmSound()
+    private void PlayOneHighDangerAlarmSound()
     {
         if (soundIsEnabled)
         {
-            highDangerAlarmSound.PlayOneShotOnCamera();
+            highDangerAlarmSound.PlayOneShot(new TargetInfo(Position, Map));
         }
     }
 
@@ -327,11 +319,11 @@ internal class Building_AlertSpeaker : Building
         switch (currentDangerRate)
         {
             case StoryDanger.None:
+            {
                 glowRadius = 0f;
-                glowColor.r = 0;
-                glowColor.g = 0;
-                glowColor.b = 0;
+                glowColor = new ColorInt(0, 0, 0, 255);
                 break;
+            }
             case StoryDanger.Low:
                 glowRadius = 4f;
                 glowColor.r = 242;
@@ -340,7 +332,7 @@ internal class Building_AlertSpeaker : Building
                 break;
             case StoryDanger.High:
             {
-                glowRadius = 0f;
+                glowRadius = 4f;
                 glowColor.r = 220;
                 glowColor.g = 0;
                 glowColor.b = 0;
@@ -369,15 +361,13 @@ internal class Building_AlertSpeaker : Building
 
     private void updateGlowerParameters()
     {
-        if (glowerComp.Props.glowRadius == glowRadius && glowerComp.Props.glowColor == glowColor)
+        if (glowerComp.Props.glowRadius.Equals(glowRadius) && glowerComp.Props.glowColor == glowColor)
         {
             return;
         }
 
         glowerComp.Props.glowRadius = glowRadius;
         glowerComp.Props.glowColor = glowColor;
-        Map.mapDrawer.MapMeshDirty(Position, 1);
-        Map.glowGrid.DirtyCell(Position);
     }
 
     protected override void DrawAt(Vector3 drawLoc, bool flip = false)

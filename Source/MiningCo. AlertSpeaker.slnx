@@ -1,6 +1,27 @@
 <Solution>
+  <Folder Name="/.github/">
+    <File Path="../.github/copilot-instructions.md" />
+  </Folder>
   <Configurations>
     <BuildType Name="Release" />
   </Configurations>
   <Project Path="MiningCo. AlertSpeaker/MiningCo. AlertSpeaker.csproj" />
+  <Folder Name="/XML/1.6/Defs/HeddifsDefs/">
+    <File Path="../1.6/Defs/HeddifsDefs/Hediffs_Adrenaline.xml" />
+  </Folder>
+  <Folder Name="/XML/About/">
+    <File Path="../About/about.xml" />
+  </Folder>
+  <Folder Name="/XML/Languages/English/Keyed/">
+    <File Path="../Languages/English/Keyed/Text.xml" />
+  </Folder>
+  <Folder Name="/XML/1.6/Defs/SoundDefs/">
+    <File Path="../1.6/Defs/SoundDefs/Sounds_AlertSpeaker.xml" />
+  </Folder>
+  <Folder Name="/XML/1.6/Defs/ThingDefs/">
+    <File Path="../1.6/Defs/ThingDefs/Building_AlertSpeaker.xml" />
+  </Folder>
+  <Folder Name="/XML/1.6/Defs/ResearchProjectDefs/">
+    <File Path="../1.6/Defs/ResearchProjectDefs/ResearchProjects_AlertSpeaker.xml" />
+  </Folder>
 </Solution>

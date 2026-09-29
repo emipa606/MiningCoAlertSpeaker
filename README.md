@@ -1,14 +1,14 @@
 # [MiningCo. Alert speaker (Continued)](https://steamcommunity.com/sharedfiles/filedetails/?id=3276121703)
 
-![Image](https://i.imgur.com/buuPQel.png)
+![Image](https://img.litet.net/logos/Info.png)
 
 Update of Rikikis mod https://steamcommunity.com/sharedfiles/filedetails/?id=848309750
 
 - Opened the strings for translation
 
-![Image](https://i.imgur.com/pufA0kM.png)
+![Image](https://img.litet.net/logos/Notice.png)
 	
-![Image](https://i.imgur.com/Z4GOv8H.png)
+![Image](https://img.litet.net/logos/OriginalDescription.png)
 
 # MiningCo.: Alert speaker
 
@@ -16,7 +16,7 @@ Update of Rikikis mod https://steamcommunity.com/sharedfiles/filedetails/?id=848
 Dear customers, some of you recently reported a bounce of pirate activity in the rim sector. Mining Co. is always trying to get its customers happy and "A dead customer is a bad customer!".
 With our new alarm system, the alert speaker, you will never get caught sleeping in your bed during a pirate raid! (a light system is also provided for deaf people).
 
-![Image](https://i.imgur.com/WdTHQfg.png)
+![Image](https://img.litet.net/WdTHQfg.png)
 
 ## Features
 
@@ -105,13 +105,13 @@ Use of custom motes.
 You are free to get inspiration from this little work and include it in any other mod/modpack. Just put a link to this thread so people can use it as a standalone version too.
 So this is basically licensed under http://creativecommons.org/licenses/by/4.0/.
 
-![Image](https://i.imgur.com/PwoNOj4.png)
+![Image](https://img.litet.net/logos/ReportingIssues.png)
 
 
 
 -  See if the the error persists if you just have this mod and its requirements active.
 -  If not, try adding your other mods until it happens again.
--  Post your error-log using [HugsLib](https://steamcommunity.com/workshop/filedetails/?id=818773962) or the standalone [Uploader](https://steamcommunity.com/sharedfiles/filedetails/?id=2873415404) and command Ctrl+F12
+-  Always post your log using the [Log Uploader](https://steamcommunity.com/sharedfiles/filedetails/?id=2873415404)
 -  For best support, please use the Discord-channel for error-reporting.
 -  Do not report errors by making a discussion-thread, I get no notification of that.
 -  If you have the solution for a problem, please post it to the GitHub repository.
@@ -119,4 +119,4 @@ So this is basically licensed under http://creativecommons.org/licenses/by/4.0/.
 
  
 
-[![Image](https://img.shields.io/github/v/release/emipa606/MiningCoAlertSpeaker?label=latest%20version&style=plastic&color=9f1111&labelColor=black)](https://steamcommunity.com/sharedfiles/filedetails/changelog/3276121703) | tags:  alarm,  security
+[![Image](https://img.shields.io/github/v/release/emipa606/MiningCoAlertSpeaker?label=latest%20version&style=plastic&color=9f1111&labelColor=black)](https://steamcommunity.com/sharedfiles/filedetails/changelog/3276121703) | security, alarm

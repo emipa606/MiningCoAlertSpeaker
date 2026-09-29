@@ -1,5 +1,9 @@
 # Changelog for MiningCoAlertSpeaker
 
+1.6.1 - Fixed multiple speakers working, as well as fixed the glowers.
+Used DeepL to update translations for German, ChineseSimplified, French
+
+
 1.6.0 - Mod updated for 1.6 and passed autotests
 
 
