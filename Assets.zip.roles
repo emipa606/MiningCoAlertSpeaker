@@ -1,0 +1,6 @@
+Sounds/Building/HighDangerAlarm.ogg raw
+Sounds/Building/LowDangerAlarm.ogg raw
+Textures/Effects/RedAlertLight.png.dds.split image:Default
+Textures/Things/Building/AlertSpeaker.png.dds.split image:Default
+Textures/Ui/Commands/CommandButton_SirenSoundDisabled.png.dds.split image:Default
+Textures/Ui/Commands/CommandButton_SirenSoundEnabled.png.dds.split image:Default

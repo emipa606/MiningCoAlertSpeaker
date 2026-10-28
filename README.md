@@ -119,4 +119,4 @@ So this is basically licensed under http://creativecommons.org/licenses/by/4.0/.
 
  
 
-[![Image](https://img.shields.io/github/v/release/emipa606/MiningCoAlertSpeaker?label=latest%20version&style=plastic&color=9f1111&labelColor=black)](https://steamcommunity.com/sharedfiles/filedetails/changelog/3276121703) | security, alarm
+[![Image](https://img.shields.io/github/v/release/emipa606/MiningCoAlertSpeaker?label=latest%20version&style=plastic&color=9f1111&labelColor=black)](https://steamcommunity.com/sharedfiles/filedetails/changelog/3276121703) | alarm, security
